@@ -35,6 +35,8 @@ function start()
     	document.getElementById("open_call_state").style.display = "block";
   	};
 
+  	setup_video();
+
 	signaling_server = new WebSocket ("ws://10.111.96.206:1234");
 
 	//determine if caller or calle if they have a hash fragemnt in URL.
@@ -94,3 +96,104 @@ function start()
 	    document.getElementById("loading_state").innerHTML = "Please wait. Your call is being connected ...";
 	}
 };
+
+function new_description_created(description) 
+{
+	peer_connection.setLocalDescription(description, 
+	    function () 
+	    {
+	      	signaling_server.send(
+		        JSON.stringify
+		        ({
+		        	token:call_token,
+		          	type:"new_description",
+		          	sdp:description 
+		        })
+	      	);
+	    }, 
+	    log_error
+  	);
+}
+
+// handle signals as a caller
+function caller_signal_handler(event) 
+{
+  var signal = JSON.parse(event.data);
+  if (signal.type === "callee_arrived") 
+  {
+    peer_connection.createOffer(
+      new_description_created, 
+      log_error
+    );
+  } else if (signal.type === "new_ice_candidate") 
+  {
+    peer_connection.addIceCandidate(
+      new RTCIceCandidate(signal.candidate)
+    );
+  } else if (signal.type === "new_description") 
+  {
+    peer_connection.setRemoteDescription(
+      new rtc_session_description(signal.sdp), 
+      function ()
+      {
+        if (peer_connection.remoteDescription.type == "answer") 
+        {
+          // extend with your own custom answer handling here
+        }
+      },
+      log_error
+    );
+  } else {
+    // extend with your own signal types here
+  }
+}
+
+//handle signals as a callee.
+function callee_signal_handler(event) 
+{
+  var signal = JSON.parse(event.data);
+  if (signal.type === "new_ice_candidate") 
+  {
+    peer_connection.addIceCandidate(
+      new RTCIceCandidate(signal.candidate)
+    );
+  } else if (signal.type === "new_description") 
+  {
+    peer_connection.setRemoteDescription(
+      new rtc_session_description(signal.sdp), 
+      function () 
+      {
+        if (peer_connection.remoteDescription.type == "offer") 
+        {
+          peer_connection.createAnswer(new_description_created, log_error);
+        }
+      },
+      log_error
+    );
+  } else {
+    // extend with your own signal types here
+  }
+}
+
+// setup stream from the local camera 
+function setup_video() 
+{
+  get_user_media(
+    { 
+      "audio": true,
+      "video": true
+    }, 
+    function (local_stream) 
+    { // display preview from the local camera & microphone using local <video> MediaElement
+      connect_stream_to_src(local_stream, document.getElementById("local_video"));
+      // add local camera stream to peer_connection ready to be sent to the remote peer
+      peer_connection.addStream(local_stream);
+    },
+    log_error
+  );
+}
+
+// generic error handler
+function log_error(error) {
+  console.log(error);
+}
