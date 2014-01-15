@@ -48,7 +48,8 @@ function start()
 	    // *** Should it be set to call_token instead ??? *** //
 	    document.location.hash = token;
 
-	    signaling_server.onopen = function() {
+	    signaling_server.onopen = function() 
+	    {
 	      // setup caller signal handler
 	      signaling_server.onmessage = caller_signal_handler;
 
@@ -61,6 +62,7 @@ function start()
 	      );
 
 	      document.getElementById("loading_state").innerHTML = "Ready for a video-conference.Send the following link to the other participants.<br/><br/>" + document.location;		
+		}
 	}
 	else
 	{
@@ -90,6 +92,5 @@ function start()
 	    }
 
 	    document.getElementById("loading_state").innerHTML = "Please wait. Your call is being connected ...";
-	  }
-		}
+	}
 };
