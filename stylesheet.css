@@ -1,0 +1,41 @@
+body
+{
+	padding: 0px;
+	margin: 0px;
+	font-family:"Helvetica";
+}
+
+#loading_state
+{
+	position: absolute;
+	top: 50%;
+	left: 0px;
+	width: 100%;
+	font-size: 40px;
+	text-align: center;
+}
+
+#open_call_state
+{
+	display:none;
+}
+
+#local_video
+{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	width: 180px;w
+	height: 150px;
+	background: #333333;
+}
+
+#remote_video
+{
+	position:absolute;
+	top: 0px;
+	left: 0px;
+	width: 1024px;
+	height: 768px;
+	background: #909090;
+}
